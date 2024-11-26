@@ -1,11 +1,17 @@
-import React, {useEffect, useState} from 'react';
-import AuthNavigator from './src/navigators/AuthNavigator';
-import {SplashScreen} from './src/screens';
+/* eslint-disable react-hooks/exhaustive-deps */
+import {useAsyncStorage} from '@react-native-async-storage/async-storage';
 import {NavigationContainer} from '@react-navigation/native';
+import React, {useEffect, useState} from 'react';
 import {StatusBar} from 'react-native';
+import AuthNavigator from './src/navigators/AuthNavigator';
+import MainNavigator from './src/navigators/MainNavigator';
+import {SplashScreen} from './src/screens';
 
 const App = () => {
   const [isShowSplash, setIsShowSplash] = useState(true);
+  const [accessToken, setAccessToken] = useState('');
+
+  const {getItem, setItem} = useAsyncStorage('accessToken');
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -14,6 +20,16 @@ const App = () => {
 
     return () => clearTimeout(timeout);
   }, []);
+
+  useEffect(() => {
+    checkLogin();
+  }, []);
+
+  const checkLogin = async () => {
+    const token = await getItem();
+
+    token && setAccessToken(token);
+  };
 
   return (
     <>
@@ -26,7 +42,7 @@ const App = () => {
         <SplashScreen />
       ) : (
         <NavigationContainer>
-          <AuthNavigator />
+          {accessToken ? <MainNavigator /> : <AuthNavigator />}
         </NavigationContainer>
       )}
     </>
